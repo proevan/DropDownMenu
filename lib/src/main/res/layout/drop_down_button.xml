@@ -12,7 +12,8 @@
         android:id="@+id/icon"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:scaleType="fitCenter"
+        android:padding="10dp"
+        android:scaleType="centerInside"
         tools:background="@android:color/holo_red_light"/>
     
     <TextView
