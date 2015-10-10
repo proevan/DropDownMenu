@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="42dp"
         android:paddingBottom="10dp"
-        android:background="#88000000"/>
+        android:background="#aa000000"/>
 
     <ImageView
         android:id="@+id/close_btn"
@@ -18,7 +18,8 @@
         android:layout_height="42dp"
         android:layout_gravity="right"
         android:scaleType="fitCenter"
-        android:padding="10dp"
+        android:padding="12dp"
+        android:layout_marginRight="4dp"
         tools:background="@android:color/holo_red_light"/>
 
 </FrameLayout>
