@@ -9,6 +9,8 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0.0"
+        renderscriptTargetApi 23
+        renderscriptSupportModeEnabled true
     }
     buildTypes {
         release {
@@ -24,4 +26,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.daimajia.easing:library:1.0.1@aar'
     compile 'com.nineoldandroids:library:2.4.0'
+    compile 'jp.wasabeef:blurry:1.0.4'
 }
