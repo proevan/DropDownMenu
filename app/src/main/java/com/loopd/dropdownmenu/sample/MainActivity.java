@@ -46,5 +46,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "click: " + position, Toast.LENGTH_SHORT).show();
             }
         });
+        mDropDownMenu.setTouchOutsideToClose(true);
     }
 }

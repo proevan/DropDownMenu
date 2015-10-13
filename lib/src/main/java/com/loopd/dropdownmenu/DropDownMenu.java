@@ -6,6 +6,7 @@ import android.content.res.XmlResourceParser;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
@@ -65,6 +66,23 @@ public class DropDownMenu extends FrameLayout {
         initCloseButtonListener();
         addView(dropDownMenuLayout);
         setVisibility(INVISIBLE);
+    }
+
+    public void setTouchOutsideToClose(boolean enable) {
+        if (enable) {
+            setOnTouchListener(new OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (isExpanded()) {
+                        close();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        } else {
+            setOnTouchListener(null);
+        }
     }
 
     @Override
@@ -159,7 +177,7 @@ public class DropDownMenu extends FrameLayout {
                 }
             });
             slideAnimationSet.setDuration(SLIDING_MENU_SLIDING_DURATION);
-            final int newBottomPadding = getHeight();
+            final int newBottomPadding = mMenuButtonsLayout.getHeight();
             Animation backgroundImageLayoutAnimation = new Animation() {
 
                 @Override
@@ -212,7 +230,7 @@ public class DropDownMenu extends FrameLayout {
                 }
             });
             slideAnimationSet.setDuration(SLIDING_MENU_SLIDING_DURATION);
-            final int newBottomPadding = getHeight();
+            final int newBottomPadding = mMenuButtonsLayout.getHeight();
             Animation backgroundImageLayoutAnimation = new Animation() {
 
                 @Override
@@ -239,6 +257,10 @@ public class DropDownMenu extends FrameLayout {
         } catch (Exception e) {
             Log.e(TAG, "setTextColorRes error: " + e.getMessage());
         }
+    }
+
+    public boolean isExpanded() {
+        return getVisibility() == VISIBLE;
     }
 
     public void setOnMenuCollapsedListener(OnMenuCollapsedListener callback) {
