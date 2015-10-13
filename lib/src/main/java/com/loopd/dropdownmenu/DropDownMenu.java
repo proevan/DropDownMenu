@@ -6,7 +6,10 @@ import android.content.res.XmlResourceParser;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,17 +21,19 @@ import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import jp.wasabeef.blurry.Blurry;
 
 public class DropDownMenu extends FrameLayout {
     private static final String TAG = "DropDownMenu";
     private static final int SLIDING_MENU_SLIDING_DURATION = 400;
     private Context mContext;
     private LinearLayout mMenuButtonsLayout;
+    private FrameLayout mBackgroundImageLayout;
     private ImageView mCloseButton;
+    private ImageView mBackgroundImage;
     private OnMenuCollapsedListener mOnMenuCollapsedListener;
     private OnMenuButtonClickListener mOnMenuButtonClickListener;
     private boolean mAnimationLock = false;
@@ -54,10 +59,36 @@ public class DropDownMenu extends FrameLayout {
         mContext = context;
         View dropDownMenuLayout = LayoutInflater.from(context).inflate(R.layout.drop_down_menu, null);
         mCloseButton = (ImageView) dropDownMenuLayout.findViewById(R.id.close_btn);
+        mBackgroundImage = (ImageView) dropDownMenuLayout.findViewById(R.id.bg_image);
         mMenuButtonsLayout = (LinearLayout) dropDownMenuLayout.findViewById(R.id.menu_buttons_layout);
+        mBackgroundImageLayout = (FrameLayout) dropDownMenuLayout.findViewById(R.id.bg_image_layout);
+        mBackgroundImageLayout.setPivotY(0);
         initCloseButtonListener();
         addView(dropDownMenuLayout);
         setVisibility(INVISIBLE);
+    }
+
+    public void setTouchOutsideToClose(boolean enable) {
+        if (enable) {
+            setOnTouchListener(new OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (isExpanded()) {
+                        close();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        } else {
+            setOnTouchListener(null);
+        }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        mBackgroundImage.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, ((View) getParent()).getHeight()));
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     private void initCloseButtonListener() {
@@ -120,6 +151,7 @@ public class DropDownMenu extends FrameLayout {
     public void open() {
         if (!mAnimationLock) {
             mAnimationLock = true;
+            Blurry.with(mContext).capture((View) getParent()).into(mBackgroundImage);
             AnimatorSet slideAnimationSet = new AnimatorSet();
             slideAnimationSet.playTogether(
                     Glider.glide(Skill.CubicEaseOut, SLIDING_MENU_SLIDING_DURATION, ObjectAnimator.ofFloat(mMenuButtonsLayout, "translationY", -mMenuButtonsLayout.getHeight(), 0)),
@@ -145,7 +177,18 @@ public class DropDownMenu extends FrameLayout {
                 }
             });
             slideAnimationSet.setDuration(SLIDING_MENU_SLIDING_DURATION);
+            final int newBottomPadding = mMenuButtonsLayout.getHeight();
+            Animation backgroundImageLayoutAnimation = new Animation() {
+
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    mBackgroundImageLayout.setPadding(0, 0, 0, (int) (newBottomPadding * (1 - interpolatedTime)));
+                }
+            };
+            backgroundImageLayoutAnimation.setDuration(SLIDING_MENU_SLIDING_DURATION);
+
             slideAnimationSet.start();
+            mBackgroundImageLayout.startAnimation(backgroundImageLayoutAnimation);
         }
     }
 
@@ -187,6 +230,17 @@ public class DropDownMenu extends FrameLayout {
                 }
             });
             slideAnimationSet.setDuration(SLIDING_MENU_SLIDING_DURATION);
+            final int newBottomPadding = mMenuButtonsLayout.getHeight();
+            Animation backgroundImageLayoutAnimation = new Animation() {
+
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    mBackgroundImageLayout.setPadding(0, 0, 0, (int) (newBottomPadding * interpolatedTime));
+                }
+            };
+            backgroundImageLayoutAnimation.setDuration(SLIDING_MENU_SLIDING_DURATION - 100); // subtract 100 milliseconds to remove delay
+
+            mBackgroundImageLayout.startAnimation(backgroundImageLayoutAnimation);
             slideAnimationSet.start();
         }
     }
@@ -203,6 +257,10 @@ public class DropDownMenu extends FrameLayout {
         } catch (Exception e) {
             Log.e(TAG, "setTextColorRes error: " + e.getMessage());
         }
+    }
+
+    public boolean isExpanded() {
+        return getVisibility() == VISIBLE;
     }
 
     public void setOnMenuCollapsedListener(OnMenuCollapsedListener callback) {
