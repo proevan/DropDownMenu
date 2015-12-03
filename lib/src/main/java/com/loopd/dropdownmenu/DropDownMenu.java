@@ -129,6 +129,11 @@ public class DropDownMenu extends FrameLayout {
         mMenuButtons.add(menuButton);
     }
 
+    public void clearMenuButtons() {
+        mMenuButtonsLayout.removeAllViews();
+        mMenuButtons.clear();
+    }
+
     private void applyTextColors(TextView textView) {
         if (mMenuButtonTextColors != null) {
             textView.setTextColor(mMenuButtonTextColors);
